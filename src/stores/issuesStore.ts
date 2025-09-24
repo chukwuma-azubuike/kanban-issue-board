@@ -2,6 +2,7 @@ import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import * as api from '../utils/api';
 import type { Issue as IssueType } from '../types';
+import { currentUser } from '../constants/currentUser';
 
 interface IssuesState {
 	issues: IssueType[];
@@ -18,6 +19,7 @@ interface IssuesState {
 	getIssues: () => Promise<void>;
 
 	// actions
+	moveIssue: (id: string, newStatus: IssueType['status']) => Promise<void>;
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
@@ -63,6 +65,19 @@ export const useIssuesStore = create<IssuesState>()(
 
 			setSeverityFilter: (severityFilter) => {
 				set({ severityFilter });
+			},
+
+			moveIssue: async (id: string, newStatus: IssueType['status']) => {
+				// client-side permission guard
+				if (currentUser.role !== 'admin') throw new Error('Permission denied');
+
+				const prev = get().issues.find((it) => it.id === id);
+				if (!prev) throw new Error('Issue not found');
+
+				// optimistic update: update local issues array
+				set((state) => ({
+					issues: state.issues.map((it) => (it.id === id ? { ...it, status: newStatus } : it)),
+				}));
 			},
 		};
 	})

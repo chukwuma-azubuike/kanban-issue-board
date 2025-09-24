@@ -22,6 +22,7 @@ export function BoardPage() {
 	const query = useIssuesStore((s) => s.query);
 	const assigneeFilter = useIssuesStore((s) => s.assigneeFilter);
 	const severityFilter = useIssuesStore((s) => s.severityFilter);
+	const moveIssue = useIssuesStore((s) => s.moveIssue);
 	const reload = useIssuesStore((s) => s.getIssues);
 	const setQuery = useIssuesStore((s) => s.setQuery);
 	const setAssigneeFilter = useIssuesStore((s) => s.setAssigneeFilter);
@@ -62,9 +63,16 @@ export function BoardPage() {
 				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 			});
 
-			return <KanbanColumn column={col} issues={sorted} currentUser={currentUser as User} />;
+			return (
+				<KanbanColumn
+					column={col}
+					issues={sorted}
+					moveIssue={moveIssue}
+					currentUser={currentUser as User}
+				/>
+			);
 		},
-		[issues, filterAndSearch]
+		[issues, filterAndSearch, moveIssue]
 	);
 
 	const handleSeverityChange = (e: ChangeEvent<HTMLSelectElement>) => {

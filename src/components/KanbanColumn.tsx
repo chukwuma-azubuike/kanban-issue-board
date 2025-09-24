@@ -5,13 +5,13 @@ import IssueCard from './IssueCard';
 interface KanbanColumnProps {
 	currentUser: User;
 	column: Column;
-	moveIssue?: (id: string, status: IssueStatus) => void;
+	moveIssue: (id: string, status: IssueStatus) => void;
 	issues: Array<Issue>;
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ moveIssue, currentUser, column, issues }) => {
 	const handleMove = (id: string, status: IssueStatus) => () => {
-		if (moveIssue) moveIssue(id, status);
+		moveIssue(id, status);
 	};
 
 	return (
