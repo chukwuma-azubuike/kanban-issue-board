@@ -12,3 +12,13 @@ export interface Issue {
 	userDefinedRank?: number;
 	createdAt: string; // ISO date
 }
+
+export interface User {
+	name: string;
+	role: 'admin' | 'contributor';
+}
+
+export interface Column {
+	key: IssueStatus;
+	label: IssueStatus;
+}
