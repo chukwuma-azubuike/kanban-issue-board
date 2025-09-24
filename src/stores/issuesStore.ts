@@ -9,11 +9,18 @@ interface IssuesState {
 	error: string | null;
 	lastSync: Date | null;
 	query: string;
+	assigneeFilter: string | 'all';
+	severityFilter: number | 'all';
 	page: number;
 
 	// selectors / helpers
 	getIssue: (id: string) => IssueType | undefined;
 	getIssues: () => Promise<void>;
+
+	// actions
+	setQuery: (value: string) => void;
+	setAssigneeFilter: (value: string | 'all') => void;
+	setSeverityFilter: (value: number | 'all') => void;
 }
 
 export const useIssuesStore = create<IssuesState>()(
@@ -26,6 +33,8 @@ export const useIssuesStore = create<IssuesState>()(
 			lastSync: null,
 			pending: {},
 			query: '',
+			assigneeFilter: 'all',
+			severityFilter: 'all',
 			page: 1,
 
 			getIssue: (id: string) => {
@@ -42,6 +51,18 @@ export const useIssuesStore = create<IssuesState>()(
 				} finally {
 					set({ loading: false });
 				}
+			},
+
+			setQuery: (query) => {
+				set({ query });
+			},
+
+			setAssigneeFilter: (assigneeFilter) => {
+				set({ assigneeFilter });
+			},
+
+			setSeverityFilter: (severityFilter) => {
+				set({ severityFilter });
 			},
 		};
 	})
