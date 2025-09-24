@@ -1,32 +1,232 @@
 [
-  {
-    "id": "1",
-    "title": "Fix login bug",
-    "status": "Backlog",
-    "priority": "high",
-    "severity": 3,
-    "createdAt": "2025-07-09T10:00:00Z",
-    "assignee": "alice",
-    "tags": ["auth", "bug"]
-  },
-  {
-    "id": "2",
-    "title": "Improve dashboard loading",
-    "status": "In Progress",
-    "priority": "medium",
-    "severity": 2,
-    "createdAt": "2025-07-08T12:00:00Z",
-    "assignee": "bob",
-    "tags": ["performance"]
-  },
-  {
-    "id": "3",
-    "title": "Add dark mode",
-    "status": "Done",
-    "priority": "low",
-    "severity": 1,
-    "createdAt": "2025-07-07T09:30:00Z",
-    "assignee": "carol",
-    "tags": ["ui"]
-  }
+	{
+		"id": "1",
+		"title": "Fix login bug",
+		"status": "Backlog",
+		"priority": "high",
+		"severity": 3,
+		"createdAt": "2025-07-09T10:00:00Z",
+		"assignee": "alice",
+		"tags": ["auth", "bug"]
+	},
+	{
+		"id": "2",
+		"title": "Improve dashboard loading",
+		"status": "In Progress",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-08T12:00:00Z",
+		"assignee": "bob",
+		"tags": ["performance"]
+	},
+	{
+		"id": "3",
+		"title": "Add dark mode",
+		"status": "Done",
+		"priority": "low",
+		"severity": 1,
+		"createdAt": "2025-07-07T09:30:00Z",
+		"assignee": "carol",
+		"tags": ["ui"]
+	},
+	{
+		"id": "4",
+		"title": "Refactor auth middleware",
+		"status": "Backlog",
+		"priority": "high",
+		"severity": 4,
+		"createdAt": "2025-07-10T14:20:00Z",
+		"assignee": "dave",
+		"tags": ["auth", "refactor"]
+	},
+	{
+		"id": "5",
+		"title": "Optimize image pipeline",
+		"status": "In Progress",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-11T08:45:00Z",
+		"assignee": "eve",
+		"tags": ["performance", "images"]
+	},
+	{
+		"id": "6",
+		"title": "Write e2e tests for checkout",
+		"status": "Backlog",
+		"priority": "medium",
+		"severity": 3,
+		"createdAt": "2025-07-12T11:00:00Z",
+		"assignee": "frank",
+		"tags": ["testing", "checkout"]
+	},
+	{
+		"id": "7",
+		"title": "Migrate DB to v12",
+		"status": "In Progress",
+		"priority": "high",
+		"severity": 4,
+		"createdAt": "2025-07-13T09:15:00Z",
+		"assignee": "grace",
+		"tags": ["database", "infra"]
+	},
+	{
+		"id": "8",
+		"title": "Fix payment race condition",
+		"status": "Backlog",
+		"priority": "high",
+		"severity": 5,
+		"createdAt": "2025-07-14T16:05:00Z",
+		"assignee": "heidi",
+		"tags": ["payments", "bug"]
+	},
+	{
+		"id": "9",
+		"title": "Update dependencies",
+		"status": "Done",
+		"priority": "low",
+		"severity": 1,
+		"createdAt": "2025-07-15T10:30:00Z",
+		"assignee": "ivan",
+		"tags": ["maintenance", "deps"]
+	},
+	{
+		"id": "10",
+		"title": "Add feature flags",
+		"status": "Backlog",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-16T13:00:00Z",
+		"assignee": "judy",
+		"tags": ["feature", "flags", "infra"]
+	},
+	{
+		"id": "11",
+		"title": "Improve search relevance",
+		"status": "In Progress",
+		"priority": "medium",
+		"severity": 3,
+		"createdAt": "2025-07-17T09:45:00Z",
+		"assignee": "alice",
+		"tags": ["search", "ux"]
+	},
+	{
+		"id": "12",
+		"title": "Fix CSS clipping on mobile",
+		"status": "Backlog",
+		"priority": "low",
+		"severity": 2,
+		"createdAt": "2025-07-18T07:50:00Z",
+		"assignee": "bob",
+		"tags": ["ui", "mobile", "bug"]
+	},
+	{
+		"id": "13",
+		"title": "Implement rate limiting",
+		"status": "Backlog",
+		"priority": "high",
+		"severity": 4,
+		"createdAt": "2025-07-19T15:22:00Z",
+		"assignee": "carol",
+		"tags": ["api", "security"]
+	},
+	{
+		"id": "14",
+		"title": "Add Sentry error tracking",
+		"status": "Done",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-20T12:00:00Z",
+		"assignee": "dave",
+		"tags": ["monitoring", "infra"]
+	},
+	{
+		"id": "15",
+		"title": "Improve onboarding flow",
+		"status": "In Progress",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-21T10:10:00Z",
+		"assignee": "eve",
+		"tags": ["ux", "onboarding"]
+	},
+	{
+		"id": "16",
+		"title": "Export CSV for reports",
+		"status": "Backlog",
+		"priority": "low",
+		"severity": 1,
+		"createdAt": "2025-07-22T09:00:00Z",
+		"assignee": "frank",
+		"tags": ["reports", "export"]
+	},
+	{
+		"id": "17",
+		"title": "Fix 500 on profile update",
+		"status": "In Progress",
+		"priority": "high",
+		"severity": 5,
+		"createdAt": "2025-07-23T11:30:00Z",
+		"assignee": "grace",
+		"tags": ["api", "bug"]
+	},
+	{
+		"id": "18",
+		"title": "Add localization (i18n)",
+		"status": "Backlog",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-24T08:30:00Z",
+		"assignee": "heidi",
+		"tags": ["i18n", "ux"]
+	},
+	{
+		"id": "19",
+		"title": "Clean up unused routes",
+		"status": "Done",
+		"priority": "low",
+		"severity": 1,
+		"createdAt": "2025-07-25T14:00:00Z",
+		"assignee": "ivan",
+		"tags": ["maintenance"]
+	},
+	{
+		"id": "20",
+		"title": "Automate DB backups",
+		"status": "Backlog",
+		"priority": "high",
+		"severity": 4,
+		"createdAt": "2025-07-26T17:45:00Z",
+		"assignee": "judy",
+		"tags": ["infra", "database"]
+	},
+	{
+		"id": "21",
+		"title": "Polish accessibility issues",
+		"status": "In Progress",
+		"priority": "medium",
+		"severity": 2,
+		"createdAt": "2025-07-27T08:15:00Z",
+		"assignee": "alice",
+		"tags": ["a11y", "ux"]
+	},
+	{
+		"id": "22",
+		"title": "Create API docs",
+		"status": "Backlog",
+		"priority": "low",
+		"severity": 1,
+		"createdAt": "2025-07-28T09:20:00Z",
+		"assignee": "bob",
+		"tags": ["docs", "api"]
+	},
+	{
+		"id": "23",
+		"title": "Hotfix: logout redirect",
+		"status": "Done",
+		"priority": "high",
+		"severity": 4,
+		"createdAt": "2025-07-29T20:10:00Z",
+		"assignee": "carol",
+		"tags": ["auth", "bug", "hotfix"]
+	}
 ]
