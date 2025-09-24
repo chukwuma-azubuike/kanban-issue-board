@@ -9,11 +9,11 @@ export const mockFetchIssues = async (): Promise<Issue[]> => {
 	});
 };
 
-export const mockUpdateIssue = async (issueId: string, updates: Partial<Issue>) => {
+export const mockUpdateIssue = async (issueId: string, updates: Partial<Issue>): Promise<Issue> => {
 	return new Promise((resolve, reject) => {
 		setTimeout(() => {
 			if (Math.random() < 0.9) {
-				resolve({ id: issueId, ...updates });
+				resolve({ id: issueId, ...updates } as Issue);
 			} else {
 				reject(new Error('Failed to update issue'));
 			}

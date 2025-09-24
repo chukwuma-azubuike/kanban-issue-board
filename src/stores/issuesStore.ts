@@ -76,8 +76,20 @@ export const useIssuesStore = create<IssuesState>()(
 
 				// optimistic update: update local issues array
 				set((state) => ({
-					issues: state.issues.map((it) => (it.id === id ? { ...it, status: newStatus } : it)),
+					issues: state.issues.map((issue) =>
+						issue.id === id ? { ...issue, status: newStatus } : issue
+					),
 				}));
+
+				// make update via api call
+				try {
+					await api.mockUpdateIssue(id, { status: newStatus });
+				} catch (err) {
+					// failure: rollback locally and remove pending
+					set((state) => ({
+						issues: state.issues.map((issue) => (issue.id === id ? prev : issue)),
+					}));
+				}
 			},
 		};
 	})
