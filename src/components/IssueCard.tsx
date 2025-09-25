@@ -1,25 +1,39 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
 import { saveRecentlyAccessed } from './RecentlyAccessed'; // helper export
+import { useDraggable } from '@dnd-kit/core';
+import { Issue } from '../types';
+import useDragStyling from '../hooks/useDragStyling';
 
 interface IssueCardProps {
-	issue: any;
+	issue: Issue;
 	draggable?: boolean;
 }
+
 const IssueCard: React.FC<IssueCardProps> = ({ issue, draggable }) => {
+	const { attributes, listeners, setNodeRef, transform } = useDraggable({
+		id: issue.id,
+		data: issue,
+	});
+
+	const dragStyling = useDragStyling(transform);
+
 	const handleClick = () => {
 		saveRecentlyAccessed(issue.id);
 	};
 
 	return (
 		<div
-			draggable={draggable}
-			id={issue.id}
+			ref={draggable ? setNodeRef : undefined} // diable dragging for non admin
+			{...listeners}
+			{...attributes}
 			style={{
+				zIndex: 1,
 				padding: 8,
 				borderRadius: 6,
 				background: 'var(--card-bg)',
 				border: '1px solid rgba(0,0,0,0.06)',
+				...dragStyling,
 			}}
 		>
 			<Link to={`/issue/${issue.id}`} onClick={handleClick}>

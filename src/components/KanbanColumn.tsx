@@ -1,6 +1,7 @@
 import React from 'react';
 import { Column, Issue, IssueStatus, User } from '../types';
 import IssueCard from './IssueCard';
+import { useDroppable } from '@dnd-kit/core';
 
 interface KanbanColumnProps {
 	currentUser: User;
@@ -10,24 +11,28 @@ interface KanbanColumnProps {
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ moveIssue, currentUser, column, issues }) => {
+	const id = `${column.key}:column`;
+
+	const { setNodeRef } = useDroppable({ id });
+
 	const handleMove = (issue: Issue, status: IssueStatus) => () => {
 		moveIssue({ ...issue, status });
 	};
 
 	return (
-		<div
-			id={`${column.key}:column`}
-			style={{ width: 320, border: '1px solid #ddd', padding: 12, borderRadius: 6 }}
-		>
+		<div ref={setNodeRef} style={{ width: 320, border: '1px solid #ddd', padding: 12, borderRadius: 6 }}>
 			<h3>
 				{column.label} ({issues.length})
 			</h3>
+
+			{/* handle empty state */}
+			{issues.length < 1 && <div> No matching issues</div>}
 			{issues.map((issue) => (
 				<div key={issue.id} style={{ marginBottom: 8 }}>
 					{/* issue card */}
 					<IssueCard issue={issue} draggable={currentUser.role === 'admin'} />
 
-					{/* controls */}
+					{/* column specific controls */}
 					{currentUser.role === 'admin' ? (
 						<div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
 							{column.key !== 'Backlog' && (

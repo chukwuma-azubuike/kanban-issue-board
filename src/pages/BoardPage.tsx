@@ -1,12 +1,13 @@
 import React, { ChangeEvent, useCallback, useMemo } from 'react';
+import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
 import { currentUser } from '../constants/currentUser';
 
 import { computeScore as computeScoreRaw } from '../utils/sorting';
-import { Column, IssueStatus, User } from '../types';
+import { Column, Issue, User } from '../types';
 import KanbanColumn from '../components/KanbanColumn';
 
-const columns: Array<{ key: IssueStatus; label: IssueStatus }> = [
+const columns = [
 	{ key: 'Backlog', label: 'Backlog' },
 	{ key: 'In Progress', label: 'In Progress' },
 	{ key: 'Done', label: 'Done' },
@@ -28,6 +29,26 @@ export function BoardPage() {
 	const setAssigneeFilter = useIssuesStore((s) => s.setAssigneeFilter);
 	const setSeverityFilter = useIssuesStore((s) => s.setSeverityFilter);
 
+	const onDragEnd = useCallback(
+		async (event: DragEndEvent) => {
+			const { active, over } = event;
+
+			if (!over || !active) return;
+
+			const issue = active.data.current;
+			const [status] = (over.id as string).split(':');
+
+			if (currentUser.role !== 'admin') return;
+
+			try {
+				await updateIssue({ ...issue, status } as Partial<Issue>);
+			} catch (err) {
+				// display error
+			}
+		},
+		[updateIssue]
+	);
+
 	const filterAndSearch = useCallback(
 		(list: typeof issues) => {
 			const trimmedQuery = query.trim().toLowerCase();
@@ -47,7 +68,7 @@ export function BoardPage() {
 	);
 
 	const uniqueAssignees = useMemo(
-		() => new Set(issues.map((i) => i.assignee)) as unknown as Array<string>,
+		() => new Set(issues.map((issue) => issue.assignee)) as unknown as Array<string>,
 		[issues]
 	);
 
@@ -89,10 +110,12 @@ export function BoardPage() {
 		setAssigneeFilter(e.target.value as any);
 	};
 
+	// handle initial loading state
 	if (loading && issues.length < 1) {
 		return <div style={{ padding: 16 }}>Loading…</div>;
 	}
 
+	// handle error state
 	if (error && issues.length < 1) {
 		return <div style={{ color: 'red', padding: 16 }}>{error}</div>;
 	}
@@ -125,11 +148,13 @@ export function BoardPage() {
 					</div>
 				</div>
 
-				<div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
-					{columns.map((col) => {
-						return renderColumnWithSortedIssues(col);
-					})}
-				</div>
+				<DndContext onDragEnd={onDragEnd}>
+					<div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+						{columns.map((col) => {
+							return renderColumnWithSortedIssues(col);
+						})}
+					</div>
+				</DndContext>
 			</div>
 
 			<div style={{ width: 280 }}>

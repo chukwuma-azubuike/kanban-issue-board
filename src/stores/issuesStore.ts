@@ -76,6 +76,7 @@ export const useIssuesStore = create<IssuesState>()(
 
 				// optimistic update: update local issues array
 				set((state) => ({
+					error: null,
 					issues: state.issues.map((issue) => (issue.id === id ? { ...issue, ...patch } : issue)),
 				}));
 
@@ -85,6 +86,7 @@ export const useIssuesStore = create<IssuesState>()(
 				} catch (err) {
 					// failure: rollback locally and remove pending
 					set((state) => ({
+						error: 'Issue update failed',
 						issues: state.issues.map((issue) => (issue.id === id ? prev : issue)),
 					}));
 				}
