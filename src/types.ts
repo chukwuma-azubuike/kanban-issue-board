@@ -22,3 +22,12 @@ export interface Column {
 	key: IssueStatus;
 	label: IssueStatus;
 }
+
+export interface PendingUpdate {
+	id: string;
+	prev: Issue;
+	newStatus: IssueStatus;
+	commitTimeoutId: number | null;
+	cleanupTimeoutId: number | null;
+	committed: boolean;
+}

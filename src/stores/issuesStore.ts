@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import * as api from '../utils/api';
-import type { Issue, Issue as IssueType } from '../types';
+import type { Issue, IssueStatus, Issue as IssueType, PendingUpdate } from '../types';
 import { currentUser } from '../constants/currentUser';
 
 interface IssuesState {
@@ -9,6 +9,7 @@ interface IssuesState {
 	loading: boolean;
 	error: string | null;
 	lastSync: Date | null;
+	pending: Record<string, PendingUpdate>;
 	query: string;
 	assigneeFilter: string | 'all';
 	severityFilter: number | 'all';
@@ -16,14 +17,18 @@ interface IssuesState {
 
 	// selectors / helpers
 	getIssue: (id: string) => IssueType | undefined;
+	getPendingIds: () => string[];
 	getIssues: () => Promise<void>;
 
 	// actions
 	updateIssue: (issue: Partial<Issue>) => Promise<void>;
+	undoMove: (id: string) => Promise<boolean>;
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
 }
+
+export const UNDO_DURATION_SEC = 5;
 
 export const useIssuesStore = create<IssuesState>()(
 	devtools((set, get) => {
@@ -42,6 +47,8 @@ export const useIssuesStore = create<IssuesState>()(
 			getIssue: (id: string) => {
 				return get().issues.find((i) => i.id === id);
 			},
+
+			getPendingIds: () => Object.keys(get().pending),
 
 			getIssues: async () => {
 				set({ loading: true });
@@ -80,15 +87,122 @@ export const useIssuesStore = create<IssuesState>()(
 					issues: state.issues.map((issue) => (issue.id === id ? { ...issue, ...patch } : issue)),
 				}));
 
-				// make update via api call
+				// clear existing pending if present
+				const existing = get().pending[id];
+
+				if (existing) {
+					if (existing.commitTimeoutId) clearTimeout(existing.commitTimeoutId);
+					if (existing.cleanupTimeoutId) clearTimeout(existing.cleanupTimeoutId);
+				}
+
+				const undoDuration = Math.max(1, UNDO_DURATION_SEC);
+
+				// schedule commit (simulate network) after 500ms
+				const commitTimeoutId = window.setTimeout(async () => {
+					try {
+						await api.mockUpdateIssue(id, patch);
+						const p = get().pending[id];
+						if (p) {
+							// mark committed, keep pending metadata for undo window
+							set((state) => ({
+								pending: { ...state.pending, [id]: { ...state.pending[id], committed: true } },
+							}));
+						}
+					} catch (err) {
+						// failure: rollback locally and remove pending
+						set((state) => ({
+							issues: state.issues.map((issue) => (issue.id === id ? prev : issue)),
+							pending: (() => {
+								const copy = { ...state.pending };
+								delete copy[id];
+								return copy;
+							})(),
+						}));
+					}
+				}, 500);
+
+				// schedule cleanup after undo duration seconds (remove pending metadata, ensure commit)
+				const cleanupTimeoutId = window.setTimeout(async () => {
+					const p = get().pending[id];
+					if (!p) return;
+					// if not committed yet, attempt commit now
+					if (!p.committed) {
+						try {
+							await api.mockUpdateIssue(id, patch);
+						} catch {
+							// commit failed — rollback locally
+							set((state) => ({
+								issues: state.issues.map((issue) => (issue.id === id ? prev : issue)),
+							}));
+						}
+					}
+					// clear timeouts and remove pending
+					if (p.commitTimeoutId) clearTimeout(p.commitTimeoutId);
+					set((state) => {
+						const copy = { ...state.pending };
+						delete copy[id];
+						return { pending: copy };
+					});
+				}, Math.max(1000, undoDuration * 1000));
+
+				// save pending meta
+				const pendingObj: PendingUpdate = {
+					id,
+					prev,
+					commitTimeoutId,
+					cleanupTimeoutId,
+					committed: false,
+					newStatus: patch.status as IssueStatus,
+				};
+
+				set((state) => ({ pending: { ...state.pending, [id]: pendingObj } }));
+			},
+
+			undoMove: async (id: string) => {
+				const pending = get().pending[id];
+				if (!pending) return false;
+
+				// cancel cleanup
+				if (pending.cleanupTimeoutId) clearTimeout(pending.cleanupTimeoutId);
+
+				// if not committed yet: cancel commit and rollback locally
+				if (!pending.committed) {
+					if (pending.commitTimeoutId) clearTimeout(pending.commitTimeoutId);
+					set((state) => ({
+						issues: state.issues.map((issue) => (issue.id === id ? pending.prev : issue)),
+						pending: (() => {
+							const copy = { ...state.pending };
+							delete copy[id];
+							return copy;
+						})(),
+					}));
+					return true;
+				}
+
+				// if committed already: perform compensating update to revert remote state
 				try {
-					await api.mockUpdateIssue(id, patch);
+					await api.mockUpdateIssue(id, { status: pending.prev.status });
+					set((state) => ({
+						issues: state.issues.map((issue) => (issue.id === id ? pending.prev : issue)),
+						pending: (() => {
+							const copy = { ...state.pending };
+							delete copy[id];
+							return copy;
+						})(),
+					}));
+					return true;
 				} catch (err) {
-					// failure: rollback locally and remove pending
+					// if revert fails, still rollback locally and remove pending
 					set((state) => ({
 						error: 'Issue update failed',
-						issues: state.issues.map((issue) => (issue.id === id ? prev : issue)),
+						issues: state.issues.map((issue) => (issue.id === id ? pending.prev : issue)),
+						pending: (() => {
+							const copy = { ...state.pending };
+							delete copy[id];
+							return copy;
+						})(),
 					}));
+					return false;
 				}
 			},
 		};

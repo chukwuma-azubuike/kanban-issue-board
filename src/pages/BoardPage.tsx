@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useCallback, useMemo } from 'react';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
+import UndoSnackbar from '../components/UndoSnackbar';
 import { currentUser } from '../constants/currentUser';
 
 import { computeScore as computeScoreRaw } from '../utils/sorting';
@@ -161,6 +162,8 @@ export function BoardPage() {
 				{loading && <div>Loading…</div>}
 				{error && <div style={{ color: 'red' }}>{error}</div>}
 			</div>
+
+			<UndoSnackbar />
 		</div>
 	);
 }
