@@ -1,17 +1,17 @@
 import React from 'react';
-import { Column, Issue, User, IssueStatus } from '../types';
+import { Column, Issue, IssueStatus, User } from '../types';
 import IssueCard from './IssueCard';
 
 interface KanbanColumnProps {
 	currentUser: User;
 	column: Column;
-	moveIssue: (id: string, status: IssueStatus) => void;
+	moveIssue: (issues: Issue) => void;
 	issues: Array<Issue>;
 }
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ moveIssue, currentUser, column, issues }) => {
-	const handleMove = (id: string, status: IssueStatus) => () => {
-		moveIssue(id, status);
+	const handleMove = (issue: Issue, status: IssueStatus) => () => {
+		moveIssue({ ...issue, status });
 	};
 
 	return (
@@ -31,14 +31,12 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ moveIssue, currentUser, col
 					{currentUser.role === 'admin' ? (
 						<div style={{ display: 'flex', gap: 6, marginTop: 6 }}>
 							{column.key !== 'Backlog' && (
-								<button onClick={handleMove(issue.id, 'Backlog')}>To Backlog</button>
+								<button onClick={handleMove(issue, 'Backlog')}>To Backlog</button>
 							)}
 							{column.key !== 'In Progress' && (
-								<button onClick={handleMove(issue.id, 'In Progress')}>To In Progress</button>
+								<button onClick={handleMove(issue, 'In Progress')}>To In Progress</button>
 							)}
-							{column.key !== 'Done' && (
-								<button onClick={handleMove(issue.id, 'Done')}>To Done</button>
-							)}
+							{column.key !== 'Done' && <button onClick={handleMove(issue, 'Done')}>To Done</button>}
 						</div>
 					) : null}
 				</div>

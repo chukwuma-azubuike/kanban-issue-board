@@ -1,7 +1,7 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import * as api from '../utils/api';
-import type { Issue as IssueType } from '../types';
+import type { Issue, Issue as IssueType } from '../types';
 import { currentUser } from '../constants/currentUser';
 
 interface IssuesState {
@@ -19,7 +19,7 @@ interface IssuesState {
 	getIssues: () => Promise<void>;
 
 	// actions
-	moveIssue: (id: string, newStatus: IssueType['status']) => Promise<void>;
+	updateIssue: (issue: Partial<Issue>) => Promise<void>;
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
@@ -67,23 +67,21 @@ export const useIssuesStore = create<IssuesState>()(
 				set({ severityFilter });
 			},
 
-			moveIssue: async (id: string, newStatus: IssueType['status']) => {
+			updateIssue: async ({ id, ...patch }: Partial<Issue> & { id: string }) => {
 				// client-side permission guard
 				if (currentUser.role !== 'admin') throw new Error('Permission denied');
 
-				const prev = get().issues.find((it) => it.id === id);
+				const prev = get().issues.find((issue) => issue.id === id);
 				if (!prev) throw new Error('Issue not found');
 
 				// optimistic update: update local issues array
 				set((state) => ({
-					issues: state.issues.map((issue) =>
-						issue.id === id ? { ...issue, status: newStatus } : issue
-					),
+					issues: state.issues.map((issue) => (issue.id === id ? { ...issue, ...patch } : issue)),
 				}));
 
 				// make update via api call
 				try {
-					await api.mockUpdateIssue(id, { status: newStatus });
+					await api.mockUpdateIssue(id, patch);
 				} catch (err) {
 					// failure: rollback locally and remove pending
 					set((state) => ({
