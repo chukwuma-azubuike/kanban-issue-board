@@ -16,7 +16,7 @@ interface IssuesState {
 	page: number;
 
 	// selectors / helpers
-	getIssue: (id: string) => IssueType | undefined;
+	getIssue: (id: string) => Promise<Issue>;
 	getPendingIds: () => string[];
 	getIssues: () => Promise<void>;
 
@@ -44,8 +44,25 @@ export const useIssuesStore = create<IssuesState>()(
 			severityFilter: 'all',
 			page: 1,
 
-			getIssue: (id: string) => {
-				return get().issues.find((i) => i.id === id);
+			getIssue: async (id: string) => {
+				// try to get from cache
+				const cached = get().issues.find((issue) => issue.id === id);
+
+				if (cached) return cached;
+
+				if (!cached) {
+					set({ loading: true, error: null });
+					try {
+						const issues = await api.mockFetchIssues();
+						const remoteIssue = issues.find((issue) => issue.id === id);
+
+						return remoteIssue;
+					} catch (err: any) {
+						set({ error: err?.message ?? 'Failed to fetch issues' });
+					} finally {
+						set({ loading: false });
+					}
+				}
 			},
 
 			getPendingIds: () => Object.keys(get().pending),
