@@ -27,11 +27,14 @@ export function BoardPage() {
 	const query = useIssuesStore((s) => s.query);
 	const assigneeFilter = useIssuesStore((s) => s.assigneeFilter);
 	const severityFilter = useIssuesStore((s) => s.severityFilter);
+	const page = useIssuesStore((s) => s.page);
+	const hasMore = useIssuesStore((s) => s.hasMore);
 	const updateIssue = useIssuesStore((s) => s.updateIssue);
 	const reload = useIssuesStore((s) => s.getIssues);
 	const setQuery = useIssuesStore((s) => s.setQuery);
 	const setAssigneeFilter = useIssuesStore((s) => s.setAssigneeFilter);
 	const setSeverityFilter = useIssuesStore((s) => s.setSeverityFilter);
+	const setPage = useIssuesStore((s) => s.setPage);
 
 	const onDragEnd = useCallback(
 		async (event: DragEndEvent) => {
@@ -99,6 +102,13 @@ export function BoardPage() {
 		setSeverityFilter(e.target.value !== 'all' ? Number(e.target.value) : e.target.value);
 	};
 
+	const handlePagination = () => {
+		if (hasMore) {
+			setPage(page + 1);
+			reload({ page: page + 1, limit: 10 });
+		}
+	};
+
 	const handleQuery = (e: ChangeEvent<HTMLInputElement>) => {
 		setQuery(e.target.value);
 	};
@@ -142,8 +152,10 @@ export function BoardPage() {
 						))}
 					</select>
 					<div style={{ marginLeft: 'auto' }}>
-						Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}
-						<button onClick={reload}>Sync now</button>
+						<span style={{ marginRight: 10 }}>
+							Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}
+						</span>
+						<button onClick={reload as () => void}>Sync now</button>
 					</div>
 				</div>
 
@@ -154,6 +166,12 @@ export function BoardPage() {
 						})}
 					</div>
 				</DndContext>
+
+				<div style={{ marginTop: 12 }}>
+					<button disabled={!hasMore} onClick={handlePagination}>
+						{hasMore ? 'Load more' : 'No more issues to load'}
+					</button>
+				</div>
 			</div>
 
 			<div style={{ width: 280 }}>

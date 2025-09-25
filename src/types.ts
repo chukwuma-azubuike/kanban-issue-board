@@ -31,3 +31,8 @@ export interface PendingUpdate {
 	cleanupTimeoutId: number | null;
 	committed: boolean;
 }
+
+export interface Pagination {
+	page: number;
+	limit: number;
+}

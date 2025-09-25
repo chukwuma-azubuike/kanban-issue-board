@@ -1,8 +1,9 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import * as api from '../utils/api';
-import type { Issue, IssueStatus, Issue as IssueType, PendingUpdate } from '../types';
+import type { Issue, IssueStatus, Issue as IssueType, Pagination, PendingUpdate } from '../types';
 import { currentUser } from '../constants/currentUser';
+import dedupeById from '../utils/dedupe';
 
 interface IssuesState {
 	issues: IssueType[];
@@ -14,11 +15,12 @@ interface IssuesState {
 	assigneeFilter: string | 'all';
 	severityFilter: number | 'all';
 	page: number;
+	hasMore: boolean;
 
 	// selectors / helpers
 	getIssue: (id: string) => Promise<Issue>;
 	getPendingIds: () => string[];
-	getIssues: () => Promise<void>;
+	getIssues: (pagination?: Partial<Pagination>) => Promise<void>;
 
 	// actions
 	updateIssue: (issue: Partial<Issue>) => Promise<void>;
@@ -27,6 +29,7 @@ interface IssuesState {
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
+	setPage: (value: number) => void;
 }
 
 export const UNDO_DURATION_SEC = 5;
@@ -68,11 +71,44 @@ export const useIssuesStore = create<IssuesState>()(
 
 			getPendingIds: () => Object.keys(get().pending),
 
-			getIssues: async () => {
+			getIssues: async (pagination: Pagination) => {
 				set({ loading: true });
 				try {
+					const { page = 1, limit = 10 } = pagination ?? {};
+					set({ page });
+
+					// sanitize
+					const pageNum = Math.max(1, Math.floor(page));
+					const pageLimit = Math.max(1, Math.floor(limit));
+
 					const remote = await api.mockFetchIssues();
-					set({ issues: remote, lastSync: new Date(), error: null });
+
+					const start = (pageNum - 1) * pageLimit;
+					const end = start + pageLimit;
+
+					// slice safely
+					const paginatedIssues: Issue[] = remote.slice(start, end);
+
+					// determine if there's more pages available
+					const hasMore = end < remote.length;
+
+					// update store: append on page > 1, replace on page === 1
+					set((state) => {
+						const merged =
+							pageNum > 1
+								? // append but dedupe by id (protects against overlapping slices)
+								  dedupeById([...state.issues, ...paginatedIssues])
+								: paginatedIssues;
+
+						return {
+							issues: merged,
+							lastSync: new Date(),
+							error: null,
+							hasMore,
+						};
+					});
+
+					return paginatedIssues;
 				} catch (err: any) {
 					set({ error: err?.message ?? 'Failed to fetch issues' });
 				} finally {
@@ -90,6 +126,10 @@ export const useIssuesStore = create<IssuesState>()(
 
 			setSeverityFilter: (severityFilter) => {
 				set({ severityFilter });
+			},
+
+			setPage: (page) => {
+				set({ page });
 			},
 
 			updateIssue: async ({ id, ...patch }: Partial<Issue> & { id: string }) => {
