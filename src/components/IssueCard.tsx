@@ -38,7 +38,9 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, draggable }) => {
 			}}
 		>
 			<Link to={`/issue/${issue.id}`} onClick={handleClick}>
-				<div style={{ fontWeight: 600 }}>{issue.title}</div>
+				<div style={{ fontWeight: 600 }}>
+					{issue.title} (Issue {issue.id})
+				</div>
 				<div style={{ fontSize: 12 }}>{issue.tags?.join(', ')}</div>
 				<div style={{ fontSize: 12, marginTop: 6 }}>
 					Severity: {issue.severity} • {issue.assignee ?? 'Unassigned'}
