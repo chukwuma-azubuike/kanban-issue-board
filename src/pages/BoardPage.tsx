@@ -88,16 +88,9 @@ export function BoardPage() {
 				return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
 			});
 
-			return (
-				<KanbanColumn
-					column={col}
-					issues={sorted}
-					moveIssue={updateIssue}
-					currentUser={currentUser as User}
-				/>
-			);
+			return <KanbanColumn key={col.key} column={col} issues={sorted} currentUser={currentUser as User} />;
 		},
-		[issues, filterAndSearch, updateIssue]
+		[issues, filterAndSearch]
 	);
 
 	const handleSeverityChange = (e: ChangeEvent<HTMLSelectElement>) => {
