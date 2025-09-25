@@ -3,6 +3,7 @@ import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
 import UndoSnackbar from '../components/UndoSnackbar';
 import { currentUser } from '../constants/currentUser';
+import RecentlyAccessed from '../components/RecentlyAccessed';
 
 import { computeScore as computeScoreRaw } from '../utils/sorting';
 import { Column, Issue, User } from '../types';
@@ -159,6 +160,7 @@ export function BoardPage() {
 			</div>
 
 			<div style={{ width: 280 }}>
+				<RecentlyAccessed />
 				{loading && <div>Loading…</div>}
 				{error && <div style={{ color: 'red' }}>{error}</div>}
 			</div>

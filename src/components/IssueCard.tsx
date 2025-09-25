@@ -1,6 +1,7 @@
 import React from 'react';
 import { Link } from 'react-router-dom';
-import { saveRecentlyAccessed } from './RecentlyAccessed'; // helper export
+import { saveRecentlyAccessed } from '../utils/save';
+
 import { useDraggable } from '@dnd-kit/core';
 import { Issue } from '../types';
 import useDragStyling from '../hooks/useDragStyling';
