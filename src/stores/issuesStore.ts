@@ -23,6 +23,7 @@ interface IssuesState {
 	// actions
 	updateIssue: (issue: Partial<Issue>) => Promise<void>;
 	undoMove: (id: string) => Promise<boolean>;
+	markResolved: (id: string) => Promise<void>;
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
@@ -221,6 +222,10 @@ export const useIssuesStore = create<IssuesState>()(
 					}));
 					return false;
 				}
+			},
+
+			markResolved: async (issue: Issue) => {
+				await get().updateIssue({ ...issue, status: 'Done' });
 			},
 		};
 	})

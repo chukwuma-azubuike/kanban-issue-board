@@ -1,16 +1,19 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { useIssuesStore } from '../stores/issuesStore';
+import { currentUser } from '../constants/currentUser';
 import { Issue } from '../types';
 import { saveRecentlyAccessed } from '../utils/save';
 
 export function IssueDetailPage() {
 	const { id } = useParams<{ id: string }>();
 	const getIssue = useIssuesStore((s) => s.getIssue);
+	const markResolved = useIssuesStore((s) => s.markResolved);
 	const loading = useIssuesStore((s) => s.loading);
 	const error = useIssuesStore((s) => s.error);
 
 	const [issue, setIssue] = useState<Issue | null>(null);
+	const navigate = useNavigate();
 
 	useEffect(() => {
 		saveRecentlyAccessed(id as string);
@@ -25,6 +28,14 @@ export function IssueDetailPage() {
 	if (loading) return <div>Loading…</div>;
 	if (!issue) return <div>Issue not found</div>;
 
+	const handleMark = async () => {
+		if (currentUser.role !== 'admin') {
+			return alert('Permission denied');
+		}
+		await markResolved(issue.id);
+		navigate('/board');
+	};
+
 	return (
 		<div style={{ padding: 16 }}>
 			<h2>{issue.title}</h2>
@@ -35,6 +46,14 @@ export function IssueDetailPage() {
 			<div>Priority: {issue.priority}</div>
 
 			<div>Date created: {new Date(issue.createdAt).toDateString()}</div>
+
+			<div style={{ marginTop: 16 }}>
+				{currentUser.role === 'admin' ? (
+					<button onClick={handleMark}>Mark as Resolved</button>
+				) : (
+					<div>Read-only view</div>
+				)}
+			</div>
 		</div>
 	);
 }
