@@ -7,6 +7,7 @@ import RecentlyAccessed from '../components/RecentlyAccessed';
 
 import { computeScore as computeScoreRaw } from '../utils/sorting';
 import { Column, Issue, User } from '../types';
+import { usePolling } from '../hooks/usePolling';
 import KanbanColumn from '../components/KanbanColumn';
 
 const columns = [
@@ -15,6 +16,7 @@ const columns = [
 	{ key: 'Done', label: 'Done' },
 ] as const;
 
+const POLLING_INTERVAL_SEC = 10;
 const severities = [1, 2, 3, 4, 5];
 
 export function BoardPage() {
@@ -104,6 +106,8 @@ export function BoardPage() {
 	const handleAssigneeFilter = (e: ChangeEvent<HTMLSelectElement>) => {
 		setAssigneeFilter(e.target.value as any);
 	};
+
+	usePolling(reload, POLLING_INTERVAL_SEC);
 
 	// handle initial loading state
 	if (loading && issues.length < 1) {
