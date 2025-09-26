@@ -1,11 +1,12 @@
 import { create } from 'zustand';
 import { devtools } from 'zustand/middleware';
 import * as api from '../utils/api';
-import type { Issue, IssueStatus, Issue as IssueType, Pagination, PendingUpdate } from '../types';
+import type { IssueStatus, Issue as IssueType, Pagination, PendingUpdate } from '../types';
 import { currentUser } from '../constants/currentUser';
 import dedupeById from '../utils/dedupe';
 
 interface IssuesState {
+	issue: IssueType;
 	issues: IssueType[];
 	loading: boolean;
 	error: string | null;
@@ -15,17 +16,18 @@ interface IssuesState {
 	assigneeFilter: string | 'all';
 	severityFilter: number | 'all';
 	page: number;
+	limit: number;
 	hasMore: boolean;
 
 	// selectors / helpers
-	getIssue: (id: string) => Promise<Issue>;
+	getIssue: (id: string) => Promise<IssueType>;
 	getPendingIds: () => string[];
 	getIssues: (pagination?: Partial<Pagination>) => Promise<void>;
 
 	// actions
-	updateIssue: (issue: Partial<Issue>) => Promise<void>;
+	updateIssue: (issue: Partial<IssueType>) => Promise<void>;
 	undoMove: (id: string) => Promise<boolean>;
-	markResolved: (id: string) => Promise<void>;
+	markResolved: (issue: Partial<IssueType>) => Promise<void>;
 	setQuery: (value: string) => void;
 	setAssigneeFilter: (value: string | 'all') => void;
 	setSeverityFilter: (value: number | 'all') => void;
@@ -47,18 +49,27 @@ export const useIssuesStore = create<IssuesState>()(
 			assigneeFilter: 'all',
 			severityFilter: 'all',
 			page: 1,
+			limit: 10,
 
 			getIssue: async (id: string) => {
+				// hidrate state with issues on navigating to new page
+				await get().getIssues();
+
 				// try to get from cache
 				const cached = get().issues.find((issue) => issue.id === id);
 
-				if (cached) return cached;
+				if (cached) {
+					set({ loading: false, error: null, issue: cached });
+					return cached;
+				}
 
 				if (!cached) {
 					set({ loading: true, error: null });
 					try {
 						const issues = await api.mockFetchIssues();
 						const remoteIssue = issues.find((issue) => issue.id === id);
+
+						set({ loading: false, error: null, issue: remoteIssue });
 
 						return remoteIssue;
 					} catch (err: any) {
@@ -73,21 +84,33 @@ export const useIssuesStore = create<IssuesState>()(
 
 			getIssues: async (pagination: Pagination) => {
 				set({ loading: true });
+
 				try {
-					const { page = 1, limit = 10 } = pagination ?? {};
-					set({ page });
+					const { page, limit } = pagination ?? {};
+
+					const remote = await api.mockFetchIssues();
+
+					// return entire list if there is no pagination
+					if (!page || !limit) {
+						set({ issues: remote });
+						return remote;
+					}
+
+					const cachedIssues = get().issues;
+
+					set({ page, limit });
 
 					// sanitize
 					const pageNum = Math.max(1, Math.floor(page));
 					const pageLimit = Math.max(1, Math.floor(limit));
 
-					const remote = await api.mockFetchIssues();
-
 					const start = (pageNum - 1) * pageLimit;
 					const end = start + pageLimit;
 
-					// slice safely
-					const paginatedIssues: Issue[] = remote.slice(start, end);
+					// slice safely to persist preloaded issues
+					const slicedCache = cachedIssues.slice(start, end);
+					const slicedRemote = remote.slice(start, end);
+					const paginatedIssues: IssueType[] = slicedCache.length > 0 ? slicedCache : slicedRemote;
 
 					// determine if there's more pages available
 					const hasMore = end < remote.length;
@@ -97,7 +120,7 @@ export const useIssuesStore = create<IssuesState>()(
 						const merged =
 							pageNum > 1
 								? // append but dedupe by id (protects against overlapping slices)
-								  dedupeById([...state.issues, ...paginatedIssues])
+								  dedupeById([...paginatedIssues, ...state.issues])
 								: paginatedIssues;
 
 						return {
@@ -132,12 +155,15 @@ export const useIssuesStore = create<IssuesState>()(
 				set({ page });
 			},
 
-			updateIssue: async ({ id, ...patch }: Partial<Issue> & { id: string }) => {
+			updateIssue: async ({ id, ...patch }: Partial<IssueType> & { id: string }) => {
 				// client-side permission guard
 				if (currentUser.role !== 'admin') throw new Error('Permission denied');
 
 				const prev = get().issues.find((issue) => issue.id === id);
-				if (!prev) throw new Error('Issue not found');
+
+				if (!prev) {
+					return set({ error: 'Issue not found' });
+				}
 
 				// optimistic update: update local issues array
 				set((state) => ({
@@ -264,7 +290,7 @@ export const useIssuesStore = create<IssuesState>()(
 				}
 			},
 
-			markResolved: async (issue: Issue) => {
+			markResolved: async (issue: IssueType) => {
 				await get().updateIssue({ ...issue, status: 'Done' });
 			},
 		};

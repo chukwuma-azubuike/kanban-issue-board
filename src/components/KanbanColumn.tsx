@@ -2,6 +2,7 @@ import React from 'react';
 import { Column, Issue, User } from '../types';
 import IssueCard from './IssueCard';
 import { useDroppable } from '@dnd-kit/core';
+import { useIssuesStore } from '../stores/issuesStore';
 
 interface KanbanColumnProps {
 	currentUser: User;
@@ -11,6 +12,7 @@ interface KanbanColumnProps {
 
 const KanbanColumn: React.FC<KanbanColumnProps> = ({ currentUser, column, issues }) => {
 	const id = `${column.key}:column`;
+	const updateIssue = useIssuesStore((s) => s.updateIssue);
 
 	const { setNodeRef } = useDroppable({ id });
 
@@ -25,7 +27,7 @@ const KanbanColumn: React.FC<KanbanColumnProps> = ({ currentUser, column, issues
 			{issues.map((issue) => (
 				<div key={issue.id} style={{ marginBottom: 8 }}>
 					{/* issue card */}
-					<IssueCard issue={issue} draggable={currentUser.role === 'admin'} />
+					<IssueCard issue={issue} updateIssue={updateIssue} isAdmin={currentUser.role === 'admin'} />
 				</div>
 			))}
 		</div>
