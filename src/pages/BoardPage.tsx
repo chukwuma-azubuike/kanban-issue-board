@@ -1,7 +1,6 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
-import useUndoToast from '../hooks/useUndoToast';
 import { currentUser } from '../constants/currentUser';
 import RecentlyAccessed from '../components/RecentlyAccessed';
 
@@ -58,10 +57,13 @@ export function BoardPage() {
 
 			if (!issue) return;
 
-			try {
-				await updateIssue({ ...issue, status } as Partial<Issue>);
-			} catch (err) {
-				// display error
+			// abort issue update if target status remains unchanged.
+			if (issue.status !== status) {
+				try {
+					await updateIssue({ ...issue, status } as Partial<Issue>);
+				} catch (err) {
+					// display error
+				}
 			}
 		},
 		[updateIssue]
@@ -108,8 +110,6 @@ export function BoardPage() {
 	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
 
 	usePolling(pollingCallback, pollingIntervalSec);
-
-	useUndoToast();
 
 	// find active issue for overlay preview (rendered outside column overflow)
 	const activeIssue = useMemo(

@@ -1,6 +1,5 @@
 import React, { ChangeEvent, useCallback, useMemo } from 'react';
 import { useIssuesStore } from '../stores/issuesStore';
-import useUndoToast from '../hooks/useUndoToast';
 
 import { usePolling } from '../hooks/usePolling';
 import { issueSeverities } from '../constants/issues';
@@ -51,8 +50,6 @@ export function BoardControls() {
 	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
 
 	usePolling(pollingCallback, pollingIntervalSec);
-
-	useUndoToast();
 
 	return (
 		<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingLeft: '10px' }}>

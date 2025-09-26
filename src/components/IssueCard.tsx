@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { memo } from 'react';
 import { Link } from 'react-router-dom';
 import { saveRecentlyAccessed } from '../utils/save';
 
@@ -71,4 +71,4 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, updateIssue }) =>
 	);
 };
 
-export default IssueCard;
+export default memo(IssueCard);

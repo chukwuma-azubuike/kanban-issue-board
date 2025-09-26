@@ -4,6 +4,8 @@ import * as api from '../utils/api';
 import type { IssueStatus, Issue as IssueType, Pagination, PendingUpdate } from '../types';
 import { currentUser } from '../constants/currentUser';
 import dedupeById from '../utils/dedupe';
+import { toast } from 'react-toastify';
+import renderUndoContent from '../components/UndoContent';
 
 interface IssuesState {
 	issue: IssueType;
@@ -180,6 +182,10 @@ export const useIssuesStore = create<IssuesState>()(
 				}
 
 				const undoDuration = Math.max(1, UNDO_DURATION_SEC);
+
+				toast(({ closeToast }) => {
+					return renderUndoContent(get().undoMove, closeToast, id);
+				});
 
 				// schedule commit (simulate network) after 500ms
 				const commitTimeoutId = window.setTimeout(async () => {
