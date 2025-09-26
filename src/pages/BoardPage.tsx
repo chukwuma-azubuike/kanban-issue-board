@@ -1,5 +1,5 @@
-import React, { ChangeEvent, useCallback, useMemo } from 'react';
-import { DndContext, DragEndEvent } from '@dnd-kit/core';
+import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
 import useUndoToast from '../hooks/useUndoToast';
 import { currentUser } from '../constants/currentUser';
@@ -11,6 +11,7 @@ import { usePolling } from '../hooks/usePolling';
 import KanbanColumn from '../components/KanbanColumn';
 import { issueSeverities } from '../constants/issues';
 import { useSettingsStore } from '../stores/settingsStore';
+import IssueCard from '../components/IssueCard';
 
 const columns = [
 	{ key: 'Backlog', label: 'Backlog' },
@@ -39,16 +40,29 @@ export function BoardPage() {
 
 	const { pollingIntervalSec } = useSettingsStore();
 
+	// track active dragged item id for DragOverlay preview (prevents clipping)
+	const [activeId, setActiveId] = useState<string | null>(null);
+
+	const onDragStart = useCallback((event: DragStartEvent) => {
+		// set the active id so DragOverlay can render a portal preview
+		setActiveId(event.active.id as string);
+	}, []);
+
 	const onDragEnd = useCallback(
 		async (event: DragEndEvent) => {
 			const { active, over } = event;
 
+			// clear overlay
+			setActiveId(null);
+
 			if (!over || !active) return;
 
-			const issue = active.data.current;
+			const issue = (active.data && (active.data.current as Issue)) || null;
 			const [status] = (over.id as string).split(':');
 
 			if (currentUser.role !== 'admin') return;
+
+			if (!issue) return;
 
 			try {
 				await updateIssue({ ...issue, status } as Partial<Issue>);
@@ -78,7 +92,7 @@ export function BoardPage() {
 	);
 
 	const uniqueAssignees = useMemo(
-		() => new Set(issues.map((issue) => issue.assignee)) as unknown as Array<string>,
+		() => Array.from(new Set(issues.map((issue) => issue.assignee).filter(Boolean))) as string[],
 		[issues]
 	);
 
@@ -102,7 +116,7 @@ export function BoardPage() {
 	);
 
 	const handleSeverityChange = (e: ChangeEvent<HTMLSelectElement>) => {
-		setSeverityFilter(e.target.value !== 'all' ? Number(e.target.value) : e.target.value);
+		setSeverityFilter(e.target.value !== 'all' ? Number(e.target.value) : (e.target.value as any));
 	};
 
 	const handlePagination = () => {
@@ -127,6 +141,12 @@ export function BoardPage() {
 
 	useUndoToast();
 
+	// find active issue for overlay preview (rendered outside column overflow)
+	const activeIssue = useMemo(
+		() => (activeId ? issues.find((i) => i.id === activeId) ?? null : null),
+		[activeId, issues]
+	);
+
 	// handle initial loading state
 	if (loading && issues.length < 1) {
 		return <div style={{ padding: 16 }}>Loading…</div>;
@@ -140,12 +160,14 @@ export function BoardPage() {
 	return (
 		<div style={{ display: 'flex', gap: 16 }}>
 			<div style={{ flex: 1 }}>
-				<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16 }}>
+				<div
+					style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingLeft: '10px' }}
+				>
 					<input placeholder="Search title or tags" value={query} onChange={handleQuery} />
 					<select value={assigneeFilter} onChange={handleAssigneeFilter}>
 						<option value="all">All assignees</option>
 
-						{[...uniqueAssignees].map((a) => (
+						{uniqueAssignees.map((a) => (
 							<option key={a} value={a!}>
 								{a}
 							</option>
@@ -159,22 +181,30 @@ export function BoardPage() {
 							</option>
 						))}
 					</select>
+					<button disabled={!hasMore} onClick={handlePagination}>
+						{hasMore ? 'Load more' : 'No more issues to load'}
+					</button>
 					<div>Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}</div>
 				</div>
 
-				<DndContext onDragEnd={onDragEnd}>
-					<div style={{ display: 'flex', gap: 12, marginTop: 12 }}>
+				<DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
+					<div className="kanban-wrap">
 						{columns.map((col) => {
 							return renderColumnWithSortedIssues(col);
 						})}
 					</div>
-				</DndContext>
 
-				<div style={{ marginTop: 12 }}>
-					<button disabled={!hasMore} onClick={handlePagination}>
-						{hasMore ? 'Load more' : 'No more issues to load'}
-					</button>
-				</div>
+					{/* DragOverlay renders into a portal so it's not clipped by overflowing columns */}
+					<DragOverlay>
+						{activeIssue ? (
+							<IssueCard
+								issue={activeIssue}
+								updateIssue={updateIssue}
+								isAdmin={currentUser.role === 'admin'}
+							/>
+						) : null}
+					</DragOverlay>
+				</DndContext>
 			</div>
 
 			<div style={{ width: '100%', paddingTop: 10 }}>
