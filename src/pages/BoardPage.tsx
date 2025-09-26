@@ -1,4 +1,4 @@
-import React, { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { DndContext, DragEndEvent, DragOverlay, DragStartEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
 import useUndoToast from '../hooks/useUndoToast';
@@ -9,9 +9,9 @@ import { computeScore as computeScoreRaw } from '../utils/sorting';
 import { Column, Issue, User } from '../types';
 import { usePolling } from '../hooks/usePolling';
 import KanbanColumn from '../components/KanbanColumn';
-import { issueSeverities } from '../constants/issues';
 import { useSettingsStore } from '../stores/settingsStore';
 import IssueCard from '../components/IssueCard';
+import { BoardControls } from '../components/BoardControls';
 
 const columns = [
 	{ key: 'Backlog', label: 'Backlog' },
@@ -24,18 +24,12 @@ export function BoardPage() {
 		issues,
 		loading,
 		error,
-		lastSync,
 		query,
 		assigneeFilter,
 		severityFilter,
 		page,
-		hasMore,
 		updateIssue,
 		getIssues: reload,
-		setQuery,
-		setAssigneeFilter,
-		setSeverityFilter,
-		setPage,
 	} = useIssuesStore();
 
 	const { pollingIntervalSec } = useSettingsStore();
@@ -91,11 +85,6 @@ export function BoardPage() {
 		[assigneeFilter, query, severityFilter]
 	);
 
-	const uniqueAssignees = useMemo(
-		() => Array.from(new Set(issues.map((issue) => issue.assignee).filter(Boolean))) as string[],
-		[issues]
-	);
-
 	const renderColumnWithSortedIssues = useCallback(
 		(col: Column) => {
 			// match issues with column
@@ -114,25 +103,6 @@ export function BoardPage() {
 		},
 		[issues, filterAndSearch]
 	);
-
-	const handleSeverityChange = (e: ChangeEvent<HTMLSelectElement>) => {
-		setSeverityFilter(e.target.value !== 'all' ? Number(e.target.value) : (e.target.value as any));
-	};
-
-	const handlePagination = () => {
-		if (hasMore) {
-			setPage(page + 1);
-			reload({ page: page + 1, limit: 10 });
-		}
-	};
-
-	const handleQuery = (e: ChangeEvent<HTMLInputElement>) => {
-		setQuery(e.target.value);
-	};
-
-	const handleAssigneeFilter = (e: ChangeEvent<HTMLSelectElement>) => {
-		setAssigneeFilter(e.target.value as any);
-	};
 
 	// ensure polling uses the latest pagination params
 	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
@@ -160,33 +130,7 @@ export function BoardPage() {
 	return (
 		<div style={{ display: 'flex', gap: 16 }}>
 			<div style={{ flex: 1 }}>
-				<div
-					style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingLeft: '10px' }}
-				>
-					<input placeholder="Search title or tags" value={query} onChange={handleQuery} />
-					<select value={assigneeFilter} onChange={handleAssigneeFilter}>
-						<option value="all">All assignees</option>
-
-						{uniqueAssignees.map((a) => (
-							<option key={a} value={a!}>
-								{a}
-							</option>
-						))}
-					</select>
-					<select value={severityFilter} onChange={handleSeverityChange}>
-						<option value="all">All severities</option>
-						{issueSeverities.map((s) => (
-							<option key={s} value={s}>
-								{s}
-							</option>
-						))}
-					</select>
-					<button disabled={!hasMore} onClick={handlePagination}>
-						{hasMore ? 'Load more' : 'No more issues to load'}
-					</button>
-					<div>Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}</div>
-				</div>
-
+				<BoardControls />
 				<DndContext onDragStart={onDragStart} onDragEnd={onDragEnd}>
 					<div className="kanban-wrap">
 						{columns.map((col) => {
