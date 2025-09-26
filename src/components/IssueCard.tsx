@@ -6,6 +6,7 @@ import { useDraggable } from '@dnd-kit/core';
 import { Issue } from '../types';
 import useDragStyling from '../hooks/useDragStyling';
 import UpdateControls from './UpdateControls';
+import dayjs from 'dayjs';
 
 interface IssueCardProps {
 	issue: Issue;
@@ -28,29 +29,44 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, updateIssue }) =>
 	// disable dragging for non admin
 	const dragProps = isAdmin ? { ...listeners, ...attributes } : undefined;
 
+	const priorityClass =
+		issue.priority === 'high'
+			? 'priority-high'
+			: issue.priority === 'medium'
+			? 'priority-medium'
+			: 'priority-low';
+
 	return (
 		<div
 			ref={setNodeRef}
 			{...dragProps}
 			style={{
-				zIndex: 1,
-				padding: 8,
-				borderRadius: 6,
-				background: 'var(--card-bg)',
-				border: '1px solid rgba(0,0,0,0.06)',
 				...(isAdmin ? dragStyling : undefined),
 			}}
+			className="kanban-issue"
 		>
-			<Link to={`/issue/${issue.id}`} onClick={handleClick}>
-				<div style={{ fontWeight: 600 }}>
-					{issue.title} (Issue {issue.id})
+			<div className="issue-top">
+				<div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%' }}>
+					<Link
+						to={`/issue/${issue.id}`}
+						onClick={handleClick}
+						className="issue-title"
+						aria-label={`Open issue ${issue.title}`}
+					>
+						{issue.title} (Issue {issue.id})
+					</Link>
 				</div>
-			</Link>
-			<div style={{ fontSize: 12 }}>{issue.tags?.join(', ')}</div>
-			<div style={{ fontSize: 12, marginTop: 6 }}>
-				Severity: {issue.severity} • {issue.assignee ?? 'Unassigned'}
 			</div>
-			{isAdmin && <UpdateControls issue={issue} updateIssue={updateIssue} />}
+			<div style={{ fontSize: 12 }}>{issue.tags?.join(', ')}</div>
+			<div className="issue-meta">
+				<div className="text-muted">Severity: {issue.severity ?? '-'}</div>
+				<div className="text-muted"> • {issue.assignee ?? 'Unassigned'}</div>
+			</div>
+			<div className="issue-tags">
+				{isAdmin && <UpdateControls issue={issue} updateIssue={updateIssue} />}
+				<div className={`badge ${priorityClass}`}>{issue.priority ?? 'low'}</div>
+			</div>
+			<div className="text-muted">{dayjs(issue.createdAt).toString()}</div>
 		</div>
 	);
 };

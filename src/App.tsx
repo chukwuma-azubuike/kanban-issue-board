@@ -23,8 +23,8 @@ export const App = () => {
 				newestOnTop={false}
 				closeOnClick={false}
 				rtl={false}
-				pauseOnFocusLoss
-				pauseOnHover
+				pauseOnFocusLoss={false}
+				pauseOnHover={false}
 			/>
 		</Router>
 	);

@@ -59,6 +59,7 @@ export function SettingsPage() {
 							disabled={!isAdmin}
 							value={pollingIntervalSec}
 							onChange={handlePollingInterval}
+							style={{ appearance: 'none', WebkitAppearance: 'none' }}
 						/>
 						<div style={{ fontSize: 12 }}>{pollingIntervalSec} seconds</div>
 					</div>

@@ -1,23 +1,290 @@
+/* --- Variables --- */
 :root {
-    --bg: #fff;
-    --text: #111;
-    --card-bg: #fff;
-    --nav-bg: #eee;
+    --bg: #f4f6f8;
+    --panel: #ffffff;
+    --muted: #6b7280;
+    --text: #0f1724;
+    --accent: #0ea5a4;
+    --accent-2: #3b82f6;
+    --danger: #ef4444;
+    --success: #10b981;
+    --shadow: 0 6px 18px rgba(15, 23, 36, 0.06);
+    --card-radius: 12px;
+    --glass: rgba(255, 255, 255, 0.7);
+    --control-bg: #ffffff;
+    --control-text: #0f1724;
+    --control-border: rgba(15, 23, 36, 0.08);
+    --font-family: system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
 }
 
+/* Dark theme */
 .dark {
-    --bg: #0b1020;
+    --bg: #141313;
+    --panel: #131b2d;
+    --muted: #9aa6b2;
     --text: #e6eef8;
-    --card-bg: #0f1724;
-    --nav-bg: #0f1724;
+    --accent: #06b6d4;
+    --accent-2: #60a5fa;
+    --danger: #ff7a7a;
+    --success: #34d399;
+    --control-bg: #0b1b26;
+    --control-text: #e6eef8;
+    --control-border: rgba(255, 255, 255, 0.06);
+    --shadow: 0 8px 30px rgba(2, 6, 23, 0.7);
+    --glass: rgba(255, 255, 255, 0.03);
+}
+
+/* --- Base --- */
+* {
+    box-sizing: border-box;
+}
+
+html, body, #root {
+    height: 100%;
 }
 
 body {
+    margin: 0;
     background: var(--bg);
+    color: var(--text);
+    font-family: var(--font-family);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-size: 14px;
+    line-height: 1.35;
+    padding: 16px;
+}
+
+select {
+    background-color: var(--control-bg);
+    color: var(--control-text);
+    border: 1px solid var(--control-border);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 6px;
+    padding-right: 6px;
+    border-radius: 8px;
+    font-size: var(--control-font-size);
+    box-shadow: var(--control-shadow);
+    transition: background-color .12s ease, box-shadow .12s ease, border-color .12s ease;
+
+}
+
+input, button {
+    background-color: var(--control-bg);
+    color: var(--control-text);
+    border: 1px solid var(--control-border);
+    padding-top: 4px;
+    padding-bottom: 4px;
+    padding-left: 8px;
+    padding-right: 8px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: var(--control-font-size);
+    box-shadow: var(--control-shadow);
+    transition: background-color .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+
+button:disabled {
+    background: var(--control-bg);
+}
+
+/* --- Kanban layout --- */
+.kanban-wrap {
+    display: flex;
+    gap: 20px;
+    align-items: flex-start;
+    padding: 12px;
+}
+
+/* Column */
+.kanban-column {
+    background: linear-gradient(180deg, var(--panel), var(--glass));
+    border-radius: 14px;
+    width: 340px;
+    min-height: 240px;
+    box-shadow: var(--shadow);
+    padding: 12px;
+    display: flex;
+    flex-direction: column;
+    transition: transform .15s ease, box-shadow .15s ease;
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+/* Column header */
+.kanban-column-header {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 10px;
+}
+
+.kanban-column-title {
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    color: var(--text);
+    font-size: 15px;
+}
+
+.kanban-column-meta {
+    margin-left: auto;
+    color: var(--muted);
+    font-size: 13px;
+}
+
+/* Empty column hint */
+.kanban-empty {
+    border-radius: 10px;
+    padding: 18px;
+    color: var(--muted);
+    text-align: center;
+    background: linear-gradient(180deg, rgba(0, 0, 0, 0.02), transparent);
+    font-size: 13px;
+}
+
+/* --- Issue card --- */
+.kanban-issue {
+    background: var(--panel);
+    border-radius: 10px;
+    padding: 12px;
+    margin-bottom: 10px;
+    box-shadow: 0 4px 12px rgba(2, 6, 23, 0.04);
+    transition: transform .12s ease, box-shadow .12s ease;
+    border: 1px solid rgba(0, 0, 0, 0.03);
+    cursor: grab;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    width: 100;
+}
+
+/* Issue top row */
+.issue-top {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.issue-title {
+    width: 100%;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--text);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.nav-link {
+    width: 100%;
+    font-weight: 600;
+    font-size: 16px;
     color: var(--text);
 }
 
-nav {
-    background: var(--nav-bg);
+.issue-tags {
+    display: flex;
+    gap: 6px;
+    align-items: end;
+    margin-left: auto;
+}
+
+/* metadata row */
+.issue-meta {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* small pill badge */
+.badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    font-size: 12px;
+    font-weight: 600;
+    background: rgba(0, 0, 0, 0.03);
+    color: var(--muted);
+}
+
+/* priority variants */
+.priority-high {
+    background: linear-gradient(90deg, #ffecd5, #fff3f2);
+    color: var(--danger);
+    border: 1px solid rgba(239, 68, 68, 0.08);
+}
+
+.priority-medium {
+    background: linear-gradient(90deg, #fff7ed, #fffef7);
+    color: #b45309;
+    border: 1px solid rgba(181, 83, 9, 0.06);
+}
+
+.priority-low {
+    background: linear-gradient(90deg, #f0fdf4, #f8fff9);
+    color: var(--success);
+    border: 1px solid rgba(16, 185, 129, 0.06);
+}
+
+/* small muted text */
+.text-muted {
+    color: var(--muted);
+    font-size: 12px;
+}
+
+/* subtle divider */
+.hr {
+    height: 1px;
+    background: linear-gradient(90deg, transparent, rgba(0, 0, 0, 0.04), transparent);
+    margin: 8px 0;
+    border-radius: 2px;
+}
+
+/* Drag over highlight for columns */
+.kanban-column.drag-over {
+    box-shadow: 0 14px 30px rgba(59, 130, 246, 0.08);
+    transform: translateY(-2px);
+}
+
+/* --- Sidebar (recent) --- */
+.sidebar {
+    width: 280px;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 40px;
+}
+
+.sidebar .panel {
+    background: var(--panel);
+    border-radius: 12px;
+    padding: 12px;
+    height: 300px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(0, 0, 0, 0.04);
+}
+
+.recent-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.recent-item {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    font-weight: 600;
     color: var(--text);
+    text-decoration: none;
+}
+
+.recent-item .meta {
+    color: var(--muted);
+    font-weight: 400;
+    font-size: 12px;
 }

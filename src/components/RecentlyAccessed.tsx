@@ -10,18 +10,29 @@ export default function RecentlyAccessed() {
 		setList(raw ? (JSON.parse(raw) as string[]) : []);
 	}, []);
 
-	if (!list.length) return <div>No recent issues</div>;
+	if (!list.length) {
+		return (
+			<div className="sidebar">
+				<div className="panel">
+					<h4>Recently Accessed</h4>
+					<div style={{ color: 'var(--muted)' }}>No recent issues</div>
+				</div>
+			</div>
+		);
+	}
 
 	return (
-		<div style={{ border: '1px solid #eee', padding: 12, borderRadius: 6 }}>
-			<h4>Recently Accessed</h4>
-			<ul>
-				{list.map((id) => (
-					<li key={id}>
-						<Link to={`/issue/${id}`}>{id}</Link>
-					</li>
-				))}
-			</ul>
+		<div className="sidebar">
+			<div className="panel">
+				<h4>Recently Accessed</h4>
+				<div className="recent-list">
+					{list.map((id) => (
+						<Link key={id} className="recent-item" to={`/issue/${id}`}>
+							<div style={{ fontWeight: 700 }}>{id}</div>
+						</Link>
+					))}
+				</div>
+			</div>
 		</div>
 	);
 }
