@@ -9,6 +9,7 @@ import { computeScore as computeScoreRaw } from '../utils/sorting';
 import { Column, Issue, User } from '../types';
 import { usePolling } from '../hooks/usePolling';
 import KanbanColumn from '../components/KanbanColumn';
+import { issueSeverities } from '../constants/issues';
 
 const columns = [
 	{ key: 'Backlog', label: 'Backlog' },
@@ -17,7 +18,6 @@ const columns = [
 ] as const;
 
 const POLLING_INTERVAL_SEC = 10;
-const severities = [1, 2, 3, 4, 5];
 
 export function BoardPage() {
 	const issues = useIssuesStore((s) => s.issues);
@@ -117,7 +117,10 @@ export function BoardPage() {
 		setAssigneeFilter(e.target.value as any);
 	};
 
-	usePolling(reload, POLLING_INTERVAL_SEC);
+	// ensure polling uses the latest pagination params
+	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
+
+	usePolling(pollingCallback, POLLING_INTERVAL_SEC);
 
 	// handle initial loading state
 	if (loading && issues.length < 1) {
@@ -145,7 +148,7 @@ export function BoardPage() {
 					</select>
 					<select value={severityFilter} onChange={handleSeverityChange}>
 						<option value="all">All severities</option>
-						{severities.map((s) => (
+						{issueSeverities.map((s) => (
 							<option key={s} value={s}>
 								{s}
 							</option>
