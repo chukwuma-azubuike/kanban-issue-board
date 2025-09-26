@@ -1,5 +1,5 @@
 import React, { memo } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { saveRecentlyAccessed } from '../utils/save';
 
 import { useDraggable } from '@dnd-kit/core';
@@ -21,8 +21,10 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, updateIssue }) =>
 	});
 
 	const dragStyling = useDragStyling(transform);
+	const navigate = useNavigate();
 
-	const handleClick = () => {
+	const handleClick = (e: React.MouseEvent) => {
+		navigate(`/issue/${issue.id}`);
 		saveRecentlyAccessed(issue.id);
 	};
 
@@ -38,8 +40,8 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, updateIssue }) =>
 
 	return (
 		<div
-			ref={setNodeRef}
 			{...dragProps}
+			ref={setNodeRef}
 			style={{
 				...(isAdmin ? dragStyling : undefined),
 			}}
@@ -49,7 +51,9 @@ const IssueCard: React.FC<IssueCardProps> = ({ issue, isAdmin, updateIssue }) =>
 				<div style={{ display: 'flex', gap: 8, alignItems: 'center', width: '100%' }}>
 					<Link
 						to={`/issue/${issue.id}`}
-						onClick={handleClick}
+						role="button"
+						tabIndex={0}
+						onMouseDown={handleClick}
 						className="issue-title"
 						aria-label={`Open issue ${issue.title}`}
 					>

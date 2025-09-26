@@ -32,7 +32,9 @@ export function IssueDetailPage() {
 
 	return (
 		<div style={{ padding: 16 }}>
-			<h2>{issue.title}</h2>
+			<h2>
+				{issue.title} (Issue {issue.id})
+			</h2>
 			<div>Severity: {issue.severity}</div>
 			<div>Assignee: {issue.assignee ?? 'Unassigned'}</div>
 			<div>Tags: {(issue.tags || []).join(', ')}</div>
