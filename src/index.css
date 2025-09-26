@@ -1,0 +1,23 @@
+:root {
+    --bg: #fff;
+    --text: #111;
+    --card-bg: #fff;
+    --nav-bg: #eee;
+}
+
+.dark {
+    --bg: #0b1020;
+    --text: #e6eef8;
+    --card-bg: #0f1724;
+    --nav-bg: #0f1724;
+}
+
+body {
+    background: var(--bg);
+    color: var(--text);
+}
+
+nav {
+    background: var(--nav-bg);
+    color: var(--text);
+}
