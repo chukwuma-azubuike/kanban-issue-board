@@ -1,5 +1,11 @@
 import { Issue } from '../types';
 
+const ranks = {
+	low: 1,
+	medium: 2,
+	high: 3,
+};
+
 export function daysSinceCreated(createdAtIso: string, now = new Date()): number {
 	const created = new Date(createdAtIso);
 	const diffMs = now.getTime() - created.getTime();
@@ -15,7 +21,9 @@ export function daysSinceCreated(createdAtIso: string, now = new Date()): number
 export function computeScore(issue: Issue, now = new Date()): number {
 	const severityScore = issue.severity * 10;
 	const days = daysSinceCreated(issue.createdAt, now);
-	const userRank = issue.userDefinedRank ?? 0;
+
+	// use priority as user defined rank is `userDefinedRank` is undefined
+	const userRank = issue.userDefinedRank ?? ranks[issue.priority] ?? 0;
 	return severityScore + days * -1 + userRank;
 }
 
