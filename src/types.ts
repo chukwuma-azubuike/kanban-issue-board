@@ -1,5 +1,6 @@
 export type IssueStatus = 'Backlog' | 'In Progress' | 'Done';
 export type IssuePriority = 'low' | 'medium' | 'high';
+export type IssueSeverity = 1 | 2 | 3 | 4 | 5;
 
 export interface Issue {
 	id: string;
