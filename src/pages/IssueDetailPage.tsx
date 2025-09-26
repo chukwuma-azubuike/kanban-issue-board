@@ -6,11 +6,7 @@ import { saveRecentlyAccessed } from '../utils/save';
 
 export function IssueDetailPage() {
 	const { id } = useParams<{ id: string }>();
-	const getIssue = useIssuesStore((s) => s.getIssue);
-	const markResolved = useIssuesStore((s) => s.markResolved);
-	const issuesCache = useIssuesStore((s) => s.issues);
-	const loading = useIssuesStore((s) => s.loading);
-	const error = useIssuesStore((s) => s.error);
+	const { getIssue, markResolved, issues: issuesCache, loading, error } = useIssuesStore();
 
 	const isAdmin = currentUser.role === 'admin';
 	const issue = useMemo(() => issuesCache.find((issue) => issue.id === id), [issuesCache, id]);

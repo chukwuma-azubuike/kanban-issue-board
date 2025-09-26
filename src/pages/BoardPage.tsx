@@ -20,21 +20,23 @@ const columns = [
 const POLLING_INTERVAL_SEC = 10;
 
 export function BoardPage() {
-	const issues = useIssuesStore((s) => s.issues);
-	const loading = useIssuesStore((s) => s.loading);
-	const error = useIssuesStore((s) => s.error);
-	const lastSync = useIssuesStore((s) => s.lastSync);
-	const query = useIssuesStore((s) => s.query);
-	const assigneeFilter = useIssuesStore((s) => s.assigneeFilter);
-	const severityFilter = useIssuesStore((s) => s.severityFilter);
-	const page = useIssuesStore((s) => s.page);
-	const hasMore = useIssuesStore((s) => s.hasMore);
-	const updateIssue = useIssuesStore((s) => s.updateIssue);
-	const reload = useIssuesStore((s) => s.getIssues);
-	const setQuery = useIssuesStore((s) => s.setQuery);
-	const setAssigneeFilter = useIssuesStore((s) => s.setAssigneeFilter);
-	const setSeverityFilter = useIssuesStore((s) => s.setSeverityFilter);
-	const setPage = useIssuesStore((s) => s.setPage);
+	const {
+		issues,
+		loading,
+		error,
+		lastSync,
+		query,
+		assigneeFilter,
+		severityFilter,
+		page,
+		hasMore,
+		updateIssue,
+		getIssues: reload,
+		setQuery,
+		setAssigneeFilter,
+		setSeverityFilter,
+		setPage,
+	} = useIssuesStore();
 
 	const onDragEnd = useCallback(
 		async (event: DragEndEvent) => {
