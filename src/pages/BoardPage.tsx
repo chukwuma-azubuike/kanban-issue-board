@@ -10,14 +10,13 @@ import { Column, Issue, User } from '../types';
 import { usePolling } from '../hooks/usePolling';
 import KanbanColumn from '../components/KanbanColumn';
 import { issueSeverities } from '../constants/issues';
+import { useSettingsStore } from '../stores/settingsStore';
 
 const columns = [
 	{ key: 'Backlog', label: 'Backlog' },
 	{ key: 'In Progress', label: 'In Progress' },
 	{ key: 'Done', label: 'Done' },
 ] as const;
-
-const POLLING_INTERVAL_SEC = 10;
 
 export function BoardPage() {
 	const {
@@ -37,6 +36,8 @@ export function BoardPage() {
 		setSeverityFilter,
 		setPage,
 	} = useIssuesStore();
+
+	const { pollingIntervalSec } = useSettingsStore();
 
 	const onDragEnd = useCallback(
 		async (event: DragEndEvent) => {
@@ -122,7 +123,7 @@ export function BoardPage() {
 	// ensure polling uses the latest pagination params
 	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
 
-	usePolling(pollingCallback, POLLING_INTERVAL_SEC);
+	usePolling(pollingCallback, pollingIntervalSec);
 
 	useUndoToast();
 
@@ -158,12 +159,7 @@ export function BoardPage() {
 							</option>
 						))}
 					</select>
-					<div style={{ marginLeft: 'auto' }}>
-						<span style={{ marginRight: 10 }}>
-							Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}
-						</span>
-						<button onClick={reload as () => void}>Sync now</button>
-					</div>
+					<div>Last sync: {lastSync ? lastSync.toLocaleTimeString() : '—'}</div>
 				</div>
 
 				<DndContext onDragEnd={onDragEnd}>
@@ -181,9 +177,9 @@ export function BoardPage() {
 				</div>
 			</div>
 
-			<div style={{ width: 280 }}>
+			<div style={{ width: '100%', paddingTop: 10 }}>
 				<RecentlyAccessed />
-				{loading && <div>Loading…</div>}
+				{loading && <div style={{ marginTop: 10 }}>Loading…</div>}
 				{error && <div style={{ color: 'red' }}>{error}</div>}
 			</div>
 		</div>
