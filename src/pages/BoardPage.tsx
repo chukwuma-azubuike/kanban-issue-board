@@ -1,7 +1,7 @@
 import React, { ChangeEvent, useCallback, useMemo } from 'react';
 import { DndContext, DragEndEvent } from '@dnd-kit/core';
 import { useIssuesStore } from '../stores/issuesStore';
-import UndoSnackbar from '../components/UndoSnackbar';
+import useUndoToast from '../hooks/useUndoToast';
 import { currentUser } from '../constants/currentUser';
 import RecentlyAccessed from '../components/RecentlyAccessed';
 
@@ -122,6 +122,8 @@ export function BoardPage() {
 
 	usePolling(pollingCallback, POLLING_INTERVAL_SEC);
 
+	useUndoToast();
+
 	// handle initial loading state
 	if (loading && issues.length < 1) {
 		return <div style={{ padding: 16 }}>Loading…</div>;
@@ -182,8 +184,6 @@ export function BoardPage() {
 				{loading && <div>Loading…</div>}
 				{error && <div style={{ color: 'red' }}>{error}</div>}
 			</div>
-
-			<UndoSnackbar />
 		</div>
 	);
 }
