@@ -1,9 +1,6 @@
-import React, { ChangeEvent, useCallback, useMemo } from 'react';
+import React, { ChangeEvent, useMemo } from 'react';
 import { useIssuesStore } from '../stores/issuesStore';
-
-import { usePolling } from '../hooks/usePolling';
 import { issueSeverities } from '../constants/issues';
-import { useSettingsStore } from '../stores/settingsStore';
 
 export function BoardControls() {
 	const {
@@ -20,7 +17,6 @@ export function BoardControls() {
 		setSeverityFilter,
 		setPage,
 	} = useIssuesStore();
-	const { pollingIntervalSec } = useSettingsStore();
 
 	const uniqueAssignees = useMemo(
 		() => Array.from(new Set(issues.map((issue) => issue.assignee).filter(Boolean))) as string[],
@@ -45,11 +41,6 @@ export function BoardControls() {
 	const handleAssigneeFilter = (e: ChangeEvent<HTMLSelectElement>) => {
 		setAssigneeFilter(e.target.value as any);
 	};
-
-	// ensure polling uses the latest pagination params
-	const pollingCallback = useCallback(() => reload({ page, limit: 10 }), [page, reload]);
-
-	usePolling(pollingCallback, pollingIntervalSec);
 
 	return (
 		<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingLeft: '10px' }}>
