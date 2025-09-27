@@ -2,8 +2,8 @@ import { useEffect, useRef } from 'react';
 
 /**
  *
- * @param callback
- * @param intervalMs
+ * @param callback () => Promise<any> | void
+ * @param intervalMs number
  */
 export function usePolling(callback: () => Promise<any> | void, intervalMs: number = 10) {
 	const savedRef = useRef(callback);

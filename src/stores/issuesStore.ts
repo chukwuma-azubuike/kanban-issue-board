@@ -102,7 +102,7 @@ export const useIssuesStore = create<IssuesState>()(
 
 					set({ page, limit });
 
-					// sanitize
+					// sanitize pagination
 					const pageNum = Math.max(1, Math.floor(page));
 					const pageLimit = Math.max(1, Math.floor(limit));
 
