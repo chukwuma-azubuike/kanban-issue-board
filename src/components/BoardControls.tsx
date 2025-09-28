@@ -1,6 +1,7 @@
 import React, { ChangeEvent, useMemo } from 'react';
 import { useIssuesStore } from '../stores/issuesStore';
 import { issueSeverities } from '../constants/issues';
+import useDebounce from '../hooks/useDebounce';
 
 export function BoardControls() {
 	const {
@@ -17,6 +18,10 @@ export function BoardControls() {
 		setSeverityFilter,
 		setPage,
 	} = useIssuesStore();
+
+	const debouncedQuery = useDebounce((value: string) => {
+		setQuery(value);
+	});
 
 	const uniqueAssignees = useMemo(
 		() => Array.from(new Set(issues.map((issue) => issue.assignee).filter(Boolean))) as string[],
@@ -35,7 +40,7 @@ export function BoardControls() {
 	};
 
 	const handleQuery = (e: ChangeEvent<HTMLInputElement>) => {
-		setQuery(e.target.value);
+		debouncedQuery(e.target.value);
 	};
 
 	const handleAssigneeFilter = (e: ChangeEvent<HTMLSelectElement>) => {
@@ -44,7 +49,7 @@ export function BoardControls() {
 
 	return (
 		<div style={{ display: 'flex', alignItems: 'center', gap: 12, marginTop: 16, paddingLeft: '10px' }}>
-			<input placeholder="Search title or tags" value={query} onChange={handleQuery} />
+			<input placeholder="Search title or tags" onChange={handleQuery} />
 			<select value={assigneeFilter} onChange={handleAssigneeFilter}>
 				<option value="all">All assignees</option>
 
