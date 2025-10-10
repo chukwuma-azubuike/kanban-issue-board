@@ -7,7 +7,6 @@ export function BoardControls() {
 	const {
 		issues,
 		lastSync,
-		query,
 		assigneeFilter,
 		severityFilter,
 		page,

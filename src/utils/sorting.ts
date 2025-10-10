@@ -22,7 +22,7 @@ export function computeScore(issue: Issue, now = new Date()): number {
 	const severityScore = issue.severity * 10;
 	const days = daysSinceCreated(issue.createdAt, now);
 
-	// use priority as user defined rank is `userDefinedRank` is undefined
+	// use priority as user defined rank if `userDefinedRank` is undefined
 	const userRank = issue.userDefinedRank ?? ranks[issue.priority] ?? 0;
 	return severityScore + days * -1 + userRank;
 }
